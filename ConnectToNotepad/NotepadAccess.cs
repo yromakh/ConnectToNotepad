@@ -111,6 +111,7 @@ namespace ConnectToNotepad
             return dataSet;
         }
 
+        #region UpdateRecord
         public void UpdateRecords(string editTitle, string editContent)
         {
             string sqlUpdate = string.Format("UPDATE Records SET REC_LIST = '{0}', REC_CONTENT = '{1}' WHERE REC_LIST = '{2}'",
@@ -121,7 +122,9 @@ namespace ConnectToNotepad
                 cmd.ExecuteNonQuery();
             }
         }
+        #endregion
 
+        #region DeleteRecord
         public void DeleteRecord(string title)
         {
             string sqlDelete = string.Format("DELETE FROM Records WHERE REC_LIST = '{0}'", title);
@@ -131,5 +134,6 @@ namespace ConnectToNotepad
                 cmd.ExecuteNonQuery();
             }
         }
+        #endregion
     }
 }
