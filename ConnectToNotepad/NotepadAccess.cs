@@ -32,7 +32,7 @@ namespace ConnectToNotepad
         // private method to set SqlDataAdapter and access all records
         private void AdapterSelectAll(out SqlDataAdapter dAdapter)
         {
-            dAdapter = new SqlDataAdapter("SELECT REC_LIST, REC_CONTENT FROM Records", connection);
+            dAdapter = new SqlDataAdapter("SELECT REC_ID, REC_LIST, REC_CONTENT FROM Records", connection);
             SqlCommandBuilder builder = new SqlCommandBuilder(dAdapter);
         }
 
@@ -44,12 +44,6 @@ namespace ConnectToNotepad
         #endregion
 
         #region Select_REC_LIST
-        private void AdapterSelectRecordList(out SqlDataAdapter dAdapterRecList)
-        {
-            dAdapterRecList = new SqlDataAdapter("SELECT REC_LIST FROM Records", connection);
-            SqlCommandBuilder builder = new SqlCommandBuilder(dAdapterRecList);
-        }
-
         public string ShowDBTitle(string title)
         {
             DataTable table = new DataTable();
@@ -65,6 +59,7 @@ namespace ConnectToNotepad
                 table.Load(dReader);
                 dReader.Close();
             }
+            
             return table.Rows[0]["REC_LIST"].ToString();
         }
         #endregion
@@ -112,10 +107,10 @@ namespace ConnectToNotepad
         }
 
         #region UpdateRecord
-        public void UpdateRecords(string editTitle, string editContent)
+        public void UpdateRecords(string editTitle, string editContent, string id)
         {
-            string sqlUpdate = string.Format("UPDATE Records SET REC_LIST = '{0}', REC_CONTENT = '{1}' WHERE REC_LIST = '{2}'",
-                editTitle, editContent, editTitle);
+            string sqlUpdate = string.Format("UPDATE Records SET REC_LIST = '{0}', REC_CONTENT = '{1}' WHERE REC_ID = '{2}'",
+                editTitle, editContent, id);
 
             using(SqlCommand cmd = new SqlCommand(sqlUpdate, connection))
             {
@@ -125,9 +120,9 @@ namespace ConnectToNotepad
         #endregion
 
         #region DeleteRecord
-        public void DeleteRecord(string title)
+        public void DeleteRecord(string id)
         {
-            string sqlDelete = string.Format("DELETE FROM Records WHERE REC_LIST = '{0}'", title);
+            string sqlDelete = string.Format("DELETE FROM Records WHERE REC_ID = '{0}'", id);
 
             using(SqlCommand cmd = new SqlCommand(sqlDelete, connection))
             {
