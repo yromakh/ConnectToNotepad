@@ -11,13 +11,12 @@ namespace ConnectToNotepad
 {
     public class NotepadAccess
     {
-        private SqlConnection connection = null;
+        private SqlConnection connection = new SqlConnection(@"Data Source=ROMAKHYPC\SQLEXPRESS;Initial Catalog=Notepad;Integrated Security=True");
         private SqlDataAdapter dataAdapter = null;
 
         #region Connection
-        public void OpenConnnection(string connectString)
+        public void OpenConnnection()
         {
-            connection = new SqlConnection(connectString);
             AdapterSelectAll(out dataAdapter);
             connection.Open();
         }
@@ -44,25 +43,59 @@ namespace ConnectToNotepad
         #endregion
 
         #region Select_REC_LIST
-        public string ShowDBTitle(string title)
+        public string ShowDBRecord(string recordID)
         {
             DataTable table = new DataTable();
-            string sqlSelectTitle = string.Format("SELECT REC_LIST FROM Records WHERE REC_LIST = '{0}'", title);
-            string connString = @"Data Source=ROMAKHYPC\SQLEXPRESS;Initial Catalog=Notepad;Integrated Security=True";
+            SelectRecord selectRecord = new SelectRecord();
 
-            connection = new SqlConnection(connString);
+            selectRecord.Title = string.Format("SELECT REC_LIST FROM Records WHERE REC_ID = '{0}'", recordID);
+            selectRecord.Content = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
+
+            //string sqlSelectTitle = string.Format("SELECT REC_LIST FROM Records WHERE REC_ID = '{0}'", recordID);
+            //string sqlSelectContent = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
+
             connection.Open();
-
-            using (SqlCommand cmd = new SqlCommand(sqlSelectTitle, connection))
+            using (SqlCommand cmd = new SqlCommand(selectRecord.Title, connection))
             {
                 SqlDataReader dReader = cmd.ExecuteReader();
                 table.Load(dReader);
                 dReader.Close();
             }
-            
-            return table.Rows[0]["REC_LIST"].ToString();
+
+            using (SqlCommand cmd = new SqlCommand(selectRecord.Content, connection))
+            {
+                SqlDataReader dReader = cmd.ExecuteReader();
+                table.Load(dReader);
+                dReader.Close();
+            }
+            connection.Close();
+
+            if (null != selectRecord.Title)
+                return table.Rows[0]["REC_LIST"].ToString();
+            else if (null != selectRecord.Content)
+                return table.Rows[0]["REC_CONTENT"].ToString();
+            else
+                return null;
         }
         #endregion
+
+        //#region Select_REC_CONTENT
+        //public string ShowDBContent(string recordID)
+        //{
+        //    DataTable table = new DataTable();
+        //    string sqlSelectContent = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
+        //    connection.Open();
+
+        //    using (SqlCommand cmd = new SqlCommand(sqlSelectContent, connection))
+        //    {
+        //        SqlDataReader dReader = cmd.ExecuteReader();
+        //        table.Load(dReader);
+        //        dReader.Close();
+        //    }
+        //    connection.Close();
+        //    return table.Rows[0]["REC_CONTENT"].ToString();
+        //}
+        //#endregion
 
         #region InsertRecord
         public void InsertRecord(string title, string content)
@@ -77,34 +110,16 @@ namespace ConnectToNotepad
                 command.ExecuteNonQuery();
             }
         }
-        #endregion      
-
-        #region Select_REC_CONTENT
-        public string ShowDBContent(string content) 
-        {
-            DataTable table = new DataTable();
-            string sqlSelectContent = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_CONTENT = '{0}'", content);
-            string connString = @"Data Source=ROMAKHYPC\SQLEXPRESS;Initial Catalog=Notepad;Integrated Security=True";
-
-            connection = new SqlConnection(connString);
-            connection.Open();
-
-            using (SqlCommand cmd = new SqlCommand(sqlSelectContent, connection))
-            {
-                SqlDataReader dReader = cmd.ExecuteReader();
-                table.Load(dReader);
-                dReader.Close();
-            }
-            return table.Rows[0]["REC_CONTENT"].ToString();
-        }
         #endregion
 
+        #region RefreshRecordsDB
         public DataSet RefreshRecordsDB(DataSet dataSet, string tableName)
         {
             dataSet.Tables[0].Clear();
             DisplayAllRecords(dataSet, tableName);
             return dataSet;
         }
+        #endregion
 
         #region UpdateRecord
         public void UpdateRecords(string editTitle, string editContent, string id)
@@ -130,5 +145,13 @@ namespace ConnectToNotepad
             }
         }
         #endregion
+
+        struct SelectRecord
+        {
+            public string Title{get;set;}
+            public string Content{get;set;}
+        }
+
+        enum SelectOneEnum { TITLE, CONTENT };
     }
 }
