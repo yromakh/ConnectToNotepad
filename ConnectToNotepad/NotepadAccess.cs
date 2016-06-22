@@ -42,17 +42,14 @@ namespace ConnectToNotepad
         }
         #endregion
 
-        #region Select_REC_LIST
-        public string ShowDBRecord(string recordID)
+        #region SelectCurrentRecord
+        public string ShowDBRecord(string recordID, string currentRecord)
         {
             DataTable table = new DataTable();
             SelectRecord selectRecord = new SelectRecord();
 
             selectRecord.Title = string.Format("SELECT REC_LIST FROM Records WHERE REC_ID = '{0}'", recordID);
             selectRecord.Content = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
-
-            //string sqlSelectTitle = string.Format("SELECT REC_LIST FROM Records WHERE REC_ID = '{0}'", recordID);
-            //string sqlSelectContent = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
 
             connection.Open();
             using (SqlCommand cmd = new SqlCommand(selectRecord.Title, connection))
@@ -70,32 +67,14 @@ namespace ConnectToNotepad
             }
             connection.Close();
 
-            if (null != selectRecord.Title)
+            if (currentRecord == table.Rows[0]["REC_LIST"].ToString())
                 return table.Rows[0]["REC_LIST"].ToString();
-            else if (null != selectRecord.Content)
-                return table.Rows[0]["REC_CONTENT"].ToString();
+            if (currentRecord == table.Rows[1]["REC_CONTENT"].ToString())
+                return table.Rows[1]["REC_CONTENT"].ToString();
             else
                 return null;
         }
         #endregion
-
-        //#region Select_REC_CONTENT
-        //public string ShowDBContent(string recordID)
-        //{
-        //    DataTable table = new DataTable();
-        //    string sqlSelectContent = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
-        //    connection.Open();
-
-        //    using (SqlCommand cmd = new SqlCommand(sqlSelectContent, connection))
-        //    {
-        //        SqlDataReader dReader = cmd.ExecuteReader();
-        //        table.Load(dReader);
-        //        dReader.Close();
-        //    }
-        //    connection.Close();
-        //    return table.Rows[0]["REC_CONTENT"].ToString();
-        //}
-        //#endregion
 
         #region InsertRecord
         public void InsertRecord(string title, string content)
@@ -151,7 +130,5 @@ namespace ConnectToNotepad
             public string Title{get;set;}
             public string Content{get;set;}
         }
-
-        enum SelectOneEnum { TITLE, CONTENT };
     }
 }
