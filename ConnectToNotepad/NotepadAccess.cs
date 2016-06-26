@@ -17,8 +17,8 @@ namespace ConnectToNotepad
         #region Connection
         public void OpenConnnection()
         {
-            AdapterSelectAll(out dataAdapter);
             connection.Open();
+            GetAllRecords();
         }
 
         public void CloseConnection()
@@ -27,12 +27,10 @@ namespace ConnectToNotepad
         }
         #endregion
 
-        #region SelectAll
-        // private method to set SqlDataAdapter and access all records
-        private void AdapterSelectAll(out SqlDataAdapter dAdapter)
+        #region GetAllRecords
+        private void GetAllRecords()
         {
-            dAdapter = new SqlDataAdapter("SELECT REC_ID, REC_LIST, REC_CONTENT FROM Records", connection);
-            SqlCommandBuilder builder = new SqlCommandBuilder(dAdapter);
+            dataAdapter = new SqlDataAdapter("SELECT REC_ID, REC_LIST, REC_CONTENT FROM Records", connection);
         }
 
         public DataSet DisplayAllRecords(DataSet dataSet, string tableName)
@@ -42,24 +40,19 @@ namespace ConnectToNotepad
         }
         #endregion
 
-        #region SelectCurrentRecord
-        public string ShowDBRecord(string recordID, string currentRecord)
+        #region GetCurrentRecord
+        public string GetCurrentRecord(string recordID, string field)
         {
             DataTable table = new DataTable();
-            SelectRecord selectRecord = new SelectRecord();
+            String query = null;
 
-            selectRecord.Title = string.Format("SELECT REC_LIST FROM Records WHERE REC_ID = '{0}'", recordID);
-            selectRecord.Content = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
+            if (field == "title")
+                query = string.Format("SELECT REC_LIST FROM Records WHERE REC_ID = '{0}'", recordID);
+            if (field == "content")
+                query = string.Format("SELECT REC_CONTENT FROM Records WHERE REC_ID = '{0}'", recordID);
 
             connection.Open();
-            using (SqlCommand cmd = new SqlCommand(selectRecord.Title, connection))
-            {
-                SqlDataReader dReader = cmd.ExecuteReader();
-                table.Load(dReader);
-                dReader.Close();
-            }
-
-            using (SqlCommand cmd = new SqlCommand(selectRecord.Content, connection))
+            using (SqlCommand cmd = new SqlCommand(query, connection))
             {
                 SqlDataReader dReader = cmd.ExecuteReader();
                 table.Load(dReader);
@@ -67,12 +60,7 @@ namespace ConnectToNotepad
             }
             connection.Close();
 
-            if (currentRecord == table.Rows[0]["REC_LIST"].ToString())
-                return table.Rows[0]["REC_LIST"].ToString();
-            if (currentRecord == table.Rows[1]["REC_CONTENT"].ToString())
-                return table.Rows[1]["REC_CONTENT"].ToString();
-            else
-                return null;
+            return table.Rows[0][0].ToString();
         }
         #endregion
 
@@ -91,8 +79,8 @@ namespace ConnectToNotepad
         }
         #endregion
 
-        #region RefreshRecordsDB
-        public DataSet RefreshRecordsDB(DataSet dataSet, string tableName)
+        #region RefreshRecords
+        public DataSet RefreshRecords(DataSet dataSet, string tableName)
         {
             dataSet.Tables[0].Clear();
             DisplayAllRecords(dataSet, tableName);
@@ -124,11 +112,5 @@ namespace ConnectToNotepad
             }
         }
         #endregion
-
-        struct SelectRecord
-        {
-            public string Title{get;set;}
-            public string Content{get;set;}
-        }
     }
 }
